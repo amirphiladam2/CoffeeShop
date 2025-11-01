@@ -57,7 +57,7 @@ The edge function needs access to your AI API key. This must be set in Supabase,
 supabase secrets set AI_API_KEY=your-openai-api-key-here
 ```
 
-Replace `your-openai-api-key-here` with your actual OpenAI API key (starts with `sk-...`).
+Replace `your-openai-api-key-here` with your actual Google Gemini API key (starts with `AIza...`).
 
 #### Using Supabase Dashboard:
 
@@ -71,7 +71,7 @@ Replace `your-openai-api-key-here` with your actual OpenAI API key (starts with 
 - The secret name must be exactly `AI_API_KEY`
 - This is different from Vercel environment variables!
 - This secret is only accessible by your Supabase Edge Functions
-- Use your OpenAI API key from https://platform.openai.com/api-keys
+- Use your Google Gemini API key from https://makersuite.google.com/app/apikey
 
 ### Step 3: Verify Edge Function is Working
 
@@ -96,7 +96,7 @@ These are NOT the secrets needed by the edge function!
 - `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
 
 ### For Supabase (Edge Function):
-- `AI_API_KEY` - Your AI service API key (set as Supabase secret)
+- `AI_API_KEY` - Your Google Gemini API key (FREE! Get from https://makersuite.google.com/app/apikey)
 
 ## Troubleshooting
 
@@ -112,7 +112,7 @@ These are NOT the secrets needed by the edge function!
 
 3. **Verify secret is set**:
    - Go to Supabase Dashboard → Project Settings → Edge Functions → Secrets
-   - Make sure `AI_API_KEY` is listed with your OpenAI API key
+   - Make sure `AI_API_KEY` is listed with your Google Gemini API key (starts with `AIza...`)
 
 4. **Test the endpoint directly**:
    - Open browser console (F12)
@@ -150,43 +150,39 @@ After deployment, test the chatbot:
 
 ## Getting Your AI API Key
 
-The chatbot uses **OpenAI** directly. Here's how to get your API key:
+The chatbot uses **Google Gemini** (100% FREE!). Here's how to get your API key:
 
-### Get OpenAI API Key
+### Get Google Gemini API Key (FREE!)
 
-1. **Get OpenAI API Key**:
-   - Go to https://platform.openai.com/api-keys
-   - Sign in or create account
-   - Click **"Create new secret key"**
-   - **Copy the key immediately** (you won't be able to see it again!)
-   - The key will look like: `sk-...` (a long string)
+1. **Get Gemini API Key** (100% FREE, no credit card needed!):
+   - Go to https://makersuite.google.com/app/apikey
+   - OR: https://aistudio.google.com/app/apikey
+   - Sign in with your Google account
+   - Click **"Create API Key"**
+   - Select or create a Google Cloud project (can use default)
+   - **Copy the key immediately** (starts with `AIza...`)
 
 2. **Set in Supabase**:
    - Go to Supabase Dashboard → **Project Settings** → **Edge Functions** → **Secrets**
    - Click **"Add a new secret"**
    - Name: `AI_API_KEY`
-   - Value: (paste your OpenAI API key)
+   - Value: (paste your Gemini API key - the `AIza...` key)
    - Click **Save**
 
-### OpenAI Model Information
+### Free Tier Benefits! 🎉
 
-The chatbot currently uses `gpt-3.5-turbo` which is:
-- ✅ Fast and responsive
-- ✅ Cost-effective ($0.002 per 1K tokens)
-- ✅ Good quality for chat applications
+With Google Gemini FREE tier, you get:
+- ✅ **60 requests per minute**
+- ✅ **1,500 requests per day**
+- ✅ **No credit card required**
+- ✅ **No expiration date**
+- ✅ **High quality AI responses**
 
-**Optional**: You can switch to `gpt-4` for better quality (more expensive):
-- Edit `supabase/functions/coffee-chat/index.ts`
-- Change `model: "gpt-3.5-turbo"` to `model: "gpt-4"`
-- Costs: $0.03 per 1K tokens (15x more expensive)
+**Perfect for development and small/medium production apps!**
 
-### OpenAI Pricing
+### See `FREE_AI_SETUP.md` for Complete Instructions
 
-- **gpt-3.5-turbo**: $0.002 per 1K tokens (~750 words)
-- **gpt-4**: $0.03 per 1K tokens
-- **gpt-4-turbo**: $0.01 per 1K tokens
-
-A typical chat conversation uses about 500-1000 tokens, so costs are minimal for most use cases.
+For detailed setup, troubleshooting, and more information, check `FREE_AI_SETUP.md`.
 
 ### Important Notes:
 

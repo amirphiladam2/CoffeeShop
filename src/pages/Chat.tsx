@@ -129,7 +129,9 @@ export default function Chat() {
       }
 
       if (!response.ok) {
-        throw new Error("Failed to get response from AI");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to get response from AI (Status: ${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

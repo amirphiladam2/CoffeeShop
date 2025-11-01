@@ -20,12 +20,12 @@ serve(async (req) => {
       );
     }
 
-    // Get OpenAI API key
-    const AI_API_KEY = Deno.env.get("AI_API_KEY");
+    // Get Google Gemini API key (FREE tier available!)
+    const AI_API_KEY = Deno.env.get("AI_API_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!AI_API_KEY) {
       console.error("AI_API_KEY is not configured");
       return new Response(
-        JSON.stringify({ error: "AI service not configured. Please set AI_API_KEY in Supabase secrets." }),
+        JSON.stringify({ error: "AI service not configured. Please set AI_API_KEY (Google Gemini API key) in Supabase secrets." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -62,26 +62,42 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
       { role: "user", content: message }
     ];
 
-    console.log("Calling OpenAI API...");
+    console.log("Calling Google Gemini API...");
     
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Convert OpenAI format to Gemini format
+    const geminiMessages = messages
+      .filter(msg => msg.role !== "system") // Gemini doesn't use system messages the same way
+      .map(msg => ({
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text: msg.content }]
+      }));
+    
+    // Add system prompt as first user message for Gemini
+    const systemMessage = messages.find(m => m.role === "system");
+    if (systemMessage) {
+      geminiMessages.unshift({
+        role: "user",
+        parts: [{ text: systemMessage.content }]
+      });
+    }
+    
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: messages,
-        stream: false,
-        temperature: 0.7,
-        max_tokens: 500,
+        contents: geminiMessages,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500,
+        },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -90,26 +106,27 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
         );
       }
       
-      if (response.status === 402) {
+      if (response.status === 400) {
+        const errorData = JSON.parse(errorText).error;
         return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: errorData?.message || "Invalid request. Please check your API key." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       return new Response(
-        JSON.stringify({ error: "Failed to get AI response" }),
+        JSON.stringify({ error: "Failed to get AI response. Please check your API key and try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content;
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiResponse) {
       console.error("No response from AI:", data);
       return new Response(
-        JSON.stringify({ error: "No response from AI" }),
+        JSON.stringify({ error: "No response from AI. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
