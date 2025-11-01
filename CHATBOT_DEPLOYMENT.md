@@ -153,11 +153,77 @@ After deployment, test the chatbot:
 
 ## Getting Your AI API Key
 
-If you don't have an AI API key:
+The chatbot currently uses **Lovable AI Gateway**. Here's how to get your API key:
 
-1. The code currently uses Lovable AI Gateway (`https://ai.gateway.lovable.dev`)
-2. You'll need to get your API key from Lovable or your AI service provider
-3. Set it as `AI_API_KEY` in Supabase secrets
+### Option 1: Get Lovable API Key (Current Setup)
+
+1. **Go to Lovable.dev**:
+   - Visit https://lovable.dev
+   - Sign in or create an account
+
+2. **Access AI Gateway**:
+   - Go to your project settings
+   - Look for "AI Gateway" or "API Keys" section
+   - Or visit: https://lovable.dev/ai-gateway (if available)
+
+3. **Generate/Copy API Key**:
+   - If you see an API key, copy it
+   - If not, click "Generate API Key" or "Create Key"
+   - Copy the generated key (keep it secure!)
+
+4. **Set in Supabase**:
+   - Go to Supabase Dashboard → Project Settings → Edge Functions → Secrets
+   - Add secret: `AI_API_KEY` = (your copied key)
+
+### Option 2: Use OpenAI Directly (Alternative)
+
+If you prefer using OpenAI directly instead of Lovable Gateway:
+
+1. **Get OpenAI API Key**:
+   - Go to https://platform.openai.com/api-keys
+   - Sign in or create account
+   - Click "Create new secret key"
+   - Copy the key
+
+2. **Update Edge Function**:
+   - Modify `supabase/functions/coffee-chat/index.ts`
+   - Change the endpoint from `https://ai.gateway.lovable.dev/v1/chat/completions` to `https://api.openai.com/v1/chat/completions`
+   - Update the model name if needed
+
+3. **Set in Supabase**:
+   - Add secret: `AI_API_KEY` = (your OpenAI key)
+
+### Option 3: Use Other AI Providers
+
+You can also use:
+- **Anthropic Claude**: Get key from https://console.anthropic.com/
+- **Google Gemini**: Get key from https://makersuite.google.com/app/apikey
+- **Any OpenAI-compatible API**: Update the endpoint in the edge function
+
+### Troubleshooting: Can't Find Lovable API Key?
+
+If you're having trouble finding the Lovable API key:
+
+1. **Check Your Project**: 
+   - Make sure you're logged into the Lovable project that was used to create this app
+   - The API key might be in project settings
+
+2. **Check Email/Notifications**:
+   - Lovable might have sent the API key via email when you first created the project
+
+3. **Contact Lovable Support**:
+   - Reach out to Lovable support for help locating your API key
+   - Or check their documentation: https://docs.lovable.dev
+
+4. **Alternative**: 
+   - Switch to OpenAI or another provider using Option 2 or 3 above
+
+### Important Notes:
+
+- **Never commit API keys to Git** - They should only be stored in Supabase secrets
+- **Keep your API key secure** - Treat it like a password
+- **The key format**: Usually a long string like `sk-...` or `lv_...`
+- **One key per project**: Each Supabase project needs its own secret set
 
 ---
 
