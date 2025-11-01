@@ -103,13 +103,21 @@ export default function Chat() {
 
     try {
       // Call edge function for AI response
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/coffee-chat`;
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      if (!SUPABASE_URL || !SUPABASE_KEY) {
+        throw new Error("Supabase configuration missing. Please check environment variables.");
+      }
+      
+      const CHAT_URL = `${SUPABASE_URL}/functions/v1/coffee-chat`;
+      console.log("Calling edge function:", CHAT_URL);
       
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
         },
         body: JSON.stringify({ 
           message: userMessage,
@@ -118,6 +126,9 @@ export default function Chat() {
             content: m.content
           }))
         }),
+      }).catch((fetchError) => {
+        console.error("Network error:", fetchError);
+        throw new Error(`Network error: ${fetchError.message}. This usually means the edge function is not deployed or not accessible. Please check Supabase Edge Functions deployment.`);
       });
 
       if (response.status === 429) {
@@ -155,14 +166,30 @@ export default function Chat() {
 
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to get response. Please try again.";
+      let errorMessage = "Failed to get response. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Provide specific help based on error type
+        if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError") || error.message.includes("Network error")) {
+          errorMessage = "Unable to connect to the chat service. The edge function may not be deployed. Please check Supabase Edge Functions and ensure 'coffee-chat' is deployed. See CHATBOT_DEPLOYMENT.md for help.";
+        } else if (error.message.includes("AI service not configured")) {
+          errorMessage = "AI service not configured. Please set AI_API_KEY in Supabase secrets. See FREE_AI_SETUP.md for instructions.";
+        } else if (error.message.includes("Supabase configuration")) {
+          errorMessage = "Missing Supabase configuration. Please check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set.";
+        }
+      }
+      
       toast({
-        title: "Error",
+        title: "Chat Error",
         description: errorMessage,
         variant: "destructive",
+        duration: 10000, // Show longer so user can read it
       });
+      
+      // Remove the user message if the request failed
+      setMessages((prev) => prev.filter(msg => msg.id !== userMsg.id));
     } finally {
       setLoading(false);
     }
