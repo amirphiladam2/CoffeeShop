@@ -47,12 +47,28 @@ Run all migrations in order:
 - ✅ `20251102000000_ecommerce_tables.sql` (orders, prices)
 - ⚠️ `20251103000000_ice_flavours.sql` (ice flavours - run this!)
 
-### 5. **Build Configuration**
+### 5. **Deploy Supabase Edge Functions** ⚠️
+The chatbot requires the `coffee-chat` edge function to be deployed:
+
+1. **Deploy the function**:
+   - Option A: Use Supabase CLI: `supabase functions deploy coffee-chat`
+   - Option B: Use Supabase Dashboard → Edge Functions → Create/Deploy
+
+2. **Set the AI API key secret**:
+   - Go to Supabase Dashboard → Project Settings → Edge Functions → Secrets
+   - Add: `AI_API_KEY` = Your AI service API key
+   - **See `CHATBOT_DEPLOYMENT.md` for complete instructions**
+
+3. **Verify deployment**:
+   - Check Edge Functions logs for any errors
+   - Test the chatbot in production
+
+### 6. **Build Configuration**
 - ✅ Build command: `npm run build`
 - ✅ Output directory: `dist`
 - ✅ Environment variables are properly configured
 
-### 6. **Code Quality**
+### 7. **Code Quality**
 - ✅ No linting errors
 - ✅ TypeScript strict mode enabled
 - ✅ Error boundaries in place
@@ -66,7 +82,9 @@ Run all migrations in order:
 3. Set environment variables:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
-4. Deploy!
+4. **Deploy Supabase Edge Function** (see Step 5 above or `CHATBOT_DEPLOYMENT.md`)
+5. **Set AI_API_KEY in Supabase secrets** (NOT in Vercel!)
+6. Deploy!
 
 ### For Netlify:
 1. Push code to GitHub
@@ -95,6 +113,14 @@ Run all migrations in order:
 4. **Update Supabase Email Templates**:
    - Password reset emails use production URL
    - Email confirmation uses production URL
+
+5. **Test Chatbot**:
+   - Go to Chat page in production
+   - Send a test message
+   - If it fails, check:
+     - Edge function is deployed (`CHATBOT_DEPLOYMENT.md`)
+     - `AI_API_KEY` secret is set in Supabase
+     - Edge function logs for errors
 
 ## 📝 Notes
 
