@@ -73,6 +73,16 @@ This project is built with:
 - **TanStack Query**: Powerful data synchronization for React
 - **React Router**: Declarative routing for React
 
+## Email Authentication Setup
+
+⚠️ **Important**: For email/password authentication to work (email verification, password reset), you need to configure SMTP in Supabase:
+
+1. Go to Supabase Dashboard → **Settings** → **Auth** → **SMTP Settings**
+2. **For Development**: Supabase's built-in SMTP works (limited to 3 emails/hour per user)
+3. **For Production**: Configure a custom SMTP provider (Gmail, SendGrid, Mailgun, AWS SES, Resend)
+
+📖 **See `SUPABASE_SMTP_SETUP.md` for detailed SMTP configuration instructions**
+
 ## How can I deploy this project?
 
 You can deploy this project to any hosting platform that supports Node.js applications:
@@ -81,3 +91,9 @@ You can deploy this project to any hosting platform that supports Node.js applic
 - **Netlify**: Connect your GitHub repo and deploy
 - **Railway**: Deploy from GitHub
 - **Any Node.js hosting**: Build with `npm run build` and serve the `dist` folder
+
+**Before deploying**, make sure to:
+- ✅ Configure SMTP in Supabase (see `SUPABASE_SMTP_SETUP.md`)
+- ✅ Set environment variables in your hosting platform
+- ✅ Update Supabase redirect URLs to your production domain
+- ✅ Run all database migrations

@@ -17,11 +17,22 @@ Make sure these are set in your hosting platform:
 
 ### 3. **Supabase Configuration**
 
+#### ⚠️ **SMTP Configuration (REQUIRED for Email Auth)**
+For email/password authentication to work, you need to configure SMTP in Supabase:
+
+1. Go to Supabase Dashboard → **Settings** → **Auth** → **SMTP Settings**
+2. For **Development**: Supabase's built-in SMTP works (limited)
+3. For **Production**: Configure custom SMTP provider:
+   - **Recommended Providers**: SendGrid, Mailgun, AWS SES, Resend, Gmail
+   - See `SUPABASE_SMTP_SETUP.md` for detailed instructions
+   - Free options available: SendGrid (100/day), Mailgun (5,000/month), Resend (3,000/month)
+
 #### Email Templates Setup
 1. Go to Supabase Dashboard → Authentication → Email Templates
 2. Update **Reset Password** template redirect URL to your production URL:
    - Change: `{{ .SiteURL }}/auth?reset=true`
    - Use your production URL: `https://your-app.vercel.app/auth?reset=true`
+3. Customize email templates with your branding
 
 #### Site URL Configuration
 1. Go to Supabase Dashboard → Authentication → URL Configuration
