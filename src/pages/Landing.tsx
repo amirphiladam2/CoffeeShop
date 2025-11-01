@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Coffee, Sparkles, Users, TrendingUp, ShoppingCart, ShoppingBag, Package, ArrowRight } from "lucide-react";
+import { Coffee, Sparkles, Users, TrendingUp, ShoppingCart, ShoppingBag, Package, ArrowRight, Menu } from "lucide-react";
 
 interface CoffeeProduct {
   id: string;
@@ -25,6 +26,7 @@ export default function Landing() {
   const { totalItems } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState<CoffeeProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadFeaturedProducts();
@@ -58,7 +60,9 @@ export default function Landing() {
             <Coffee className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-foreground">BrewHaven</span>
           </div>
-          <div className="flex items-center gap-4">
+          
+          {/* Desktop Navigation - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/shop")}>
               <ShoppingBag className="h-4 w-4 mr-2" />
               Shop
@@ -105,6 +109,138 @@ export default function Landing() {
                 Get Started
               </Button>
             )}
+          </div>
+
+          {/* Mobile Navigation - Show hamburger + cart only */}
+          <div className="md:hidden flex items-center gap-2">
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/cart")}
+                className="relative"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Button>
+            )}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col gap-4 mt-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Coffee className="h-6 w-6 text-primary" />
+                    <span className="text-xl font-bold">BrewHaven</span>
+                  </div>
+                  
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start"
+                    onClick={() => {
+                      navigate("/shop");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    Shop
+                  </Button>
+                  
+                  {user ? (
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => {
+                          navigate("/chat");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Chat
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => {
+                          navigate("/orders");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        Orders
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start relative"
+                        onClick={() => {
+                          navigate("/cart");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Cart
+                        {totalItems > 0 && (
+                          <Badge className="ml-2 h-5 w-5 flex items-center justify-center p-0">
+                            {totalItems}
+                          </Badge>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => {
+                          navigate("/profile");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Profile
+                      </Button>
+                      {isAdmin && (
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start"
+                          onClick={() => {
+                            navigate("/admin");
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          Admin
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        className="justify-start"
+                        onClick={async () => {
+                          await signOut();
+                          navigate("/auth");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      variant="hero" 
+                      className="justify-start"
+                      onClick={() => {
+                        navigate("/auth");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>

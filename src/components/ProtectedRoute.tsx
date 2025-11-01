@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { ReactNode, useEffect } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { FullPageLoading } from "@/components/LoadingSpinner";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,6 +11,19 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, loading, isAdmin } = useAuth();
+  const { toast } = useToast();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loading && requireAdmin && user && !isAdmin) {
+      toast({
+        title: "Admin Access Required",
+        description: "You need admin privileges to access this page. Please add admin role in Supabase.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
+  }, [loading, requireAdmin, user, isAdmin, toast]);
 
   if (loading) {
     return <FullPageLoading />;
@@ -20,6 +34,15 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (requireAdmin && !isAdmin) {
+    // Store the attempted URL so user knows where they tried to go
+    if (location.pathname === "/admin") {
+      toast({
+        title: "Admin Access Required",
+        description: "You need admin privileges. See QUICK_ADMIN_ACCESS.md for instructions.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
     return <Navigate to="/" replace />;
   }
 

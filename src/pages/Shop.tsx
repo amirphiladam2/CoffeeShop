@@ -149,8 +149,9 @@ export default function Shop() {
               onClick={() => navigate("/cart")}
               className="relative"
             >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              View Cart
+              <ShoppingCart className="h-5 w-5 md:mr-2" />
+              <span className="hidden md:inline">View Cart</span>
+              <span className="sr-only">View Cart</span>
             </Button>
           </div>
 

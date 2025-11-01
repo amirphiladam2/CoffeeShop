@@ -37,6 +37,7 @@ interface Coffee {
   price?: number;
   inventory?: number;
   featured?: boolean;
+  image_url?: string | null;
 }
 
 interface Category {
@@ -81,9 +82,10 @@ export default function Admin() {
     type: "Hot",
     category_id: "",
     ice_flavour_id: "",
-    price: 0,
+    price: 100,
     inventory: 0,
     featured: false,
+    image_url: "",
   });
 
   useEffect(() => {
@@ -154,10 +156,20 @@ export default function Admin() {
       return;
     }
 
+    if (formData.price < 100) {
+      toast({
+        title: "Validation Error",
+        description: "Price must be at least ₹100",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const updateData = {
         ...formData,
         ice_flavour_id: formData.ice_flavour_id || null,
+        image_url: formData.image_url?.trim() || null,
       };
 
       if (editingCoffee) {
@@ -236,9 +248,10 @@ export default function Admin() {
       type: coffee.type,
       category_id: coffee.category_id || "",
       ice_flavour_id: coffee.ice_flavour_id || "",
-      price: coffee.price || 0,
+      price: coffee.price || 100,
       inventory: coffee.inventory || 0,
       featured: coffee.featured || false,
+      image_url: coffee.image_url || "",
     });
     setDialogOpen(true);
   };
@@ -251,9 +264,10 @@ export default function Admin() {
       type: "Hot",
       category_id: "",
       ice_flavour_id: "",
-      price: 0,
+      price: 100,
       inventory: 0,
       featured: false,
+      image_url: "",
     });
   };
 
@@ -637,14 +651,14 @@ export default function Admin() {
                     <div className="space-y-2">
                       <Label htmlFor="iceFlavour">Ice Flavour (Optional)</Label>
                       <Select
-                        value={formData.ice_flavour_id}
-                        onValueChange={(value) => setFormData({ ...formData, ice_flavour_id: value })}
+                        value={formData.ice_flavour_id || "__none__"}
+                        onValueChange={(value) => setFormData({ ...formData, ice_flavour_id: value === "__none__" ? "" : value })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select ice flavour (optional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="__none__">None</SelectItem>
                           {iceFlavours.map((flavour) => (
                             <SelectItem key={flavour.id} value={flavour.id}>
                               <div className="flex items-center gap-2">
@@ -667,11 +681,14 @@ export default function Admin() {
                           id="price"
                           type="number"
                           step="0.01"
-                          min="0"
+                          min="100"
                           value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                          placeholder="0.00"
+                          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 100 })}
+                          placeholder="100.00"
                         />
+                        <p className="text-xs text-muted-foreground">
+                          Minimum price: ₹100
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="inventory">Inventory</Label>
@@ -684,6 +701,33 @@ export default function Admin() {
                           placeholder="0"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image_url">Image URL (Optional)</Label>
+                      <Input
+                        id="image_url"
+                        type="url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                        placeholder="https://example.com/coffee-image.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter a direct image URL. For featured products, use high-quality images (800x600px recommended).
+                      </p>
+                      {formData.image_url && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground mb-1">Preview:</p>
+                          <img
+                            src={formData.image_url}
+                            alt="Preview"
+                            className="w-full h-32 object-cover rounded-md border"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">

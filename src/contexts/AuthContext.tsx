@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminRole = useCallback(async (userId: string) => {
     try {
+      // Method 1: Check via user_roles table
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -30,9 +31,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("role", "admin")
         .maybeSingle();
 
-      if (!error && data) {
+      if (error) {
+        console.error("Error checking admin role from user_roles:", error);
+        // Try alternative method using has_role function
+        try {
+          const { data: roleCheck, error: functionError } = await supabase
+            .rpc("has_role", { _user_id: userId, _role: "admin" });
+          
+          if (!functionError && roleCheck) {
+            console.log("Admin role confirmed via has_role function");
+            setIsAdmin(true);
+            return;
+          } else {
+            console.error("Error checking admin role via has_role function:", functionError);
+          }
+        } catch (funcError) {
+          console.error("has_role function not available or error:", funcError);
+        }
+        setIsAdmin(false);
+        return;
+      }
+
+      if (data) {
+        console.log("Admin role found:", data);
         setIsAdmin(true);
       } else {
+        console.log("No admin role found for user:", userId);
         setIsAdmin(false);
       }
     } catch (error) {
