@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Coffee, Mail, User, Calendar, ArrowLeft, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { FullPageLoading } from "@/components/LoadingSpinner";
 
 interface Profile {
   email: string;
@@ -39,11 +40,14 @@ export default function Profile() {
 
       if (error) throw error;
       setProfile(data);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error loading profile:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to load profile";
       toast({
         title: "Error",
-        description: "Failed to load profile",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -60,17 +64,14 @@ export default function Profile() {
 
       if (error) throw error;
       setChatCount(count || 0);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error loading chat count:", error);
+      // Silently fail for chat count
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -92,7 +93,7 @@ export default function Profile() {
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="text-2xl">Account Information</CardTitle>
-              <CardDescription>Your CoffeeBot account details</CardDescription>
+              <CardDescription>Your BrewHaven account details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
@@ -133,7 +134,7 @@ export default function Profile() {
           <Card className="border-2">
             <CardHeader>
               <CardTitle>Activity</CardTitle>
-              <CardDescription>Your CoffeeBot usage statistics</CardDescription>
+              <CardDescription>Your BrewHaven usage statistics</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
@@ -158,7 +159,10 @@ export default function Profile() {
             <Button
               variant="destructive"
               className="flex-1"
-              onClick={signOut}
+              onClick={async () => {
+                await signOut();
+                navigate("/auth");
+              }}
             >
               Sign Out
             </Button>

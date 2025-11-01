@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Send, Coffee, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { LoadingSpinner, FullPageLoading } from "@/components/LoadingSpinner";
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ export default function Chat() {
     if (user) {
       loadChatHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -69,11 +71,12 @@ export default function Chat() {
       });
 
       setMessages(formattedMessages);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error loading chat history:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load chat history";
       toast({
         title: "Error",
-        description: "Failed to load chat history",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -148,11 +151,14 @@ export default function Chat() {
         bot_response: botResponse,
       });
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("Chat error:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to get response. Please try again.";
       toast({
         title: "Error",
-        description: error.message || "Failed to get response. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -161,11 +167,7 @@ export default function Chat() {
   };
 
   if (loadingHistory) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -178,7 +180,7 @@ export default function Chat() {
           </Button>
           <Coffee className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-xl font-bold text-foreground">CoffeeBot</h1>
+            <h1 className="text-xl font-bold text-foreground">Venessa</h1>
             <p className="text-sm text-muted-foreground">Your AI Barista</p>
           </div>
         </div>

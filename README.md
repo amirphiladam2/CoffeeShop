@@ -1,22 +1,25 @@
-# Welcome to your Lovable project
+# BrewHaven - AI Coffee Recommendations
 
-## Project info
+An AI-powered coffee recommendation application built with React, TypeScript, Vite, and Supabase. Chat with Venessa at BrewHaven to discover your perfect coffee match based on your preferences and mood.
 
-**URL**: https://lovable.dev/projects/57db1d09-b4bc-447f-bac1-af521d66da42
+## Features
+
+- 🤖 **AI-Powered Recommendations**: Chat with an AI barista to get personalized coffee suggestions
+- 🔐 **Authentication**: Secure user authentication with Supabase
+- 👤 **User Profiles**: View your profile and chat history
+- 🛡️ **Admin Dashboard**: Manage coffee items and view statistics (admin only)
+- 💬 **Chat History**: Save and view your conversation history
+- 🎨 **Modern UI**: Beautiful, responsive interface built with shadcn/ui and Tailwind CSS
+
+## Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite
+- **UI Components**: shadcn/ui, Radix UI, Tailwind CSS
+- **Backend**: Supabase (Authentication, Database, Edge Functions)
+- **State Management**: React Context API, TanStack Query
+- **Routing**: React Router v6
 
 ## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/57db1d09-b4bc-447f-bac1-af521d66da42) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -32,7 +35,13 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Set up environment variables
+# Create a .env file in the root directory with your Supabase credentials:
+# VITE_SUPABASE_URL=your_supabase_project_url
+# VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
@@ -50,24 +59,25 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+
 ## What technologies are used for this project?
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite**: Fast build tool and dev server
+- **TypeScript**: Type-safe JavaScript
+- **React 18**: Modern React with hooks
+- **shadcn-ui**: High-quality component library
+- **Tailwind CSS**: Utility-first CSS framework
+- **Supabase**: Backend as a service (Auth, Database, Edge Functions)
+- **TanStack Query**: Powerful data synchronization for React
+- **React Router**: Declarative routing for React
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/57db1d09-b4bc-447f-bac1-af521d66da42) and click on Share -> Publish.
+You can deploy this project to any hosting platform that supports Node.js applications:
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Vercel**: Connect your GitHub repo and deploy
+- **Netlify**: Connect your GitHub repo and deploy
+- **Railway**: Deploy from GitHub
+- **Any Node.js hosting**: Build with `npm run build` and serve the `dist` folder

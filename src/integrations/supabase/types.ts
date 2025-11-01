@@ -64,9 +64,12 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          featured: boolean
           id: string
           image_url: string | null
+          inventory: number
           name: string
+          price: number
           type: string
           updated_at: string
         }
@@ -74,9 +77,12 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
+          inventory?: number
           name: string
+          price?: number
           type: string
           updated_at?: string
         }
@@ -84,9 +90,12 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
+          inventory?: number
           name?: string
+          price?: number
           type?: string
           updated_at?: string
         }
@@ -96,6 +105,101 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          coffee_id: string
+          created_at: string
+          id: string
+          order_id: string
+          price: number
+          quantity: number
+          subtotal: number
+        }
+        Insert: {
+          coffee_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          price: number
+          quantity: number
+          subtotal: number
+        }
+        Update: {
+          coffee_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+          subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_coffee_id_fkey"
+            columns: ["coffee_id"]
+            isOneToOne: false
+            referencedRelation: "coffees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          payment_method: string
+          shipping_address: string
+          shipping_city: string
+          shipping_phone: string
+          shipping_postal_code: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_method?: string
+          shipping_address: string
+          shipping_city: string
+          shipping_phone: string
+          shipping_postal_code: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_method?: string
+          shipping_address?: string
+          shipping_city?: string
+          shipping_phone?: string
+          shipping_postal_code?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -163,6 +267,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      order_status: "pending" | "confirmed" | "processing" | "out_for_delivery" | "delivered" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -291,6 +396,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
+      order_status: ["pending", "confirmed", "processing", "out_for_delivery", "delivered", "cancelled"],
     },
   },
 } as const

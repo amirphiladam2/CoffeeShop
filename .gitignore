@@ -11,6 +11,17 @@ node_modules
 dist
 dist-ssr
 *.local
+.cache
+
+# Lock files (keep package-lock.json, remove others if using npm)
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
