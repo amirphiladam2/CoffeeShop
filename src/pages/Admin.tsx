@@ -632,7 +632,7 @@ export default function Admin() {
                     <div className="space-y-2">
                       <Label htmlFor="category">Category</Label>
                       <Select
-                        value={formData.category_id}
+                        value={formData.category_id || undefined}
                         onValueChange={(value) => setFormData({ ...formData, category_id: value })}
                       >
                         <SelectTrigger>
