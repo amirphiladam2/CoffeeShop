@@ -50,7 +50,10 @@ CREATE POLICY "Admins can manage all roles"
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  full_name TEXT,
+  role public.app_role NOT NULL DEFAULT 'user',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -66,6 +69,40 @@ CREATE POLICY "Users can update own profile"
 CREATE POLICY "Anyone can view profiles"
   ON public.profiles FOR SELECT
   USING (true);
+
+-- Add trigger for profiles updated_at
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Function to auto-create profile on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    'user'::public.app_role
+  )
+  ON CONFLICT (id) DO NOTHING;
+  
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, 'user'::public.app_role)
+  ON CONFLICT (user_id, role) DO NOTHING;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to create profile when user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- Step 5: Create categories table
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -238,6 +275,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Step 12: Create triggers for updated_at
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
 CREATE TRIGGER update_coffees_updated_at
   BEFORE UPDATE ON public.coffees
   FOR EACH ROW
