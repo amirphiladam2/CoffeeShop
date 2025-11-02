@@ -37,17 +37,31 @@ export function ChatDiagnostic() {
       });
 
       if (error) {
-        if (error.message?.includes("Function not found") || error.message?.includes("404")) {
-          setResult({
-            status: "error",
-            message: "❌ Edge function 'coffee-chat' is NOT deployed. Go to Supabase Dashboard → Edge Functions → Create 'coffee-chat' function. See FIX_CORS_ERROR.md for step-by-step instructions.",
-          });
+        console.error("Full error object:", error);
+        const errorAny = error as any;
+        const statusCode = errorAny?.context?.status || errorAny?.status;
+        const errorBody = errorAny?.context?.body || errorAny?.body;
+        
+        let errorMessage = error.message || "Unknown error";
+        
+        if (statusCode === 404 || error.message?.includes("Function not found")) {
+          errorMessage = "❌ Edge function 'coffee-chat' is NOT deployed. Go to Supabase Dashboard → Edge Functions → Create 'coffee-chat' function.";
+        } else if (statusCode === 500) {
+          if (errorBody?.error?.includes("AI_API_KEY") || errorBody?.error?.includes("AI service not configured")) {
+            errorMessage = "❌ AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key.";
+          } else {
+            errorMessage = `❌ Server error (500): ${errorBody?.error || error.message}. Check Supabase Edge Functions logs.`;
+          }
+        } else if (statusCode === 400) {
+          errorMessage = `❌ Bad request (400): ${errorBody?.error || error.message}`;
         } else {
-          setResult({
-            status: "error",
-            message: `❌ Error: ${error.message}`,
-          });
+          errorMessage = `❌ Error (Status ${statusCode || "unknown"}): ${errorBody?.error || error.message}`;
         }
+        
+        setResult({
+          status: "error",
+          message: errorMessage,
+        });
       } else if (data?.response) {
         setResult({
           status: "success",

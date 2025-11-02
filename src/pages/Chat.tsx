@@ -118,9 +118,14 @@ export default function Chat() {
 
       if (error) {
         console.error("Edge function error:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        
+        // Check for specific error context
+        const errorContext = (error as any)?.context;
+        const statusCode = errorContext?.status || (error as any)?.status;
         
         // Provide more specific error messages
-        if (error.message?.includes("Function not found") || error.message?.includes("404")) {
+        if (error.message?.includes("Function not found") || error.message?.includes("404") || statusCode === 404) {
           throw new Error("Edge function 'coffee-chat' is not deployed. Please deploy it in Supabase Dashboard → Edge Functions. See FIX_CORS_ERROR.md for instructions.");
         }
         
@@ -128,7 +133,23 @@ export default function Chat() {
           throw new Error("Cannot connect to chat service. The edge function may not be deployed. Please check Supabase Dashboard → Edge Functions and ensure 'coffee-chat' exists.");
         }
         
-        throw new Error(error.message || "Failed to get response from AI");
+        // If we have a status code, check what it means
+        if (statusCode === 500) {
+          const errorBody = errorContext?.body || (error as any)?.body;
+          if (errorBody?.error?.includes("AI_API_KEY") || errorBody?.error?.includes("AI service not configured")) {
+            throw new Error("AI service not configured. Please set AI_API_KEY secret in Supabase Dashboard → Edge Functions → Secrets. Get your Gemini API key from https://makersuite.google.com/app/apikey");
+          }
+          throw new Error(`Server error (500): ${errorBody?.error || error.message || "Check Supabase Edge Functions logs for details."}`);
+        }
+        
+        if (statusCode === 400) {
+          const errorBody = errorContext?.body || (error as any)?.body;
+          throw new Error(`Invalid request (400): ${errorBody?.error || error.message || "Check your request format."}`);
+        }
+        
+        // Generic non-2xx error
+        const errorMessage = errorContext?.body?.error || error.message || "Edge function returned an error";
+        throw new Error(`${errorMessage} (Status: ${statusCode || "unknown"}). Check Supabase Dashboard → Edge Functions → coffee-chat → Logs for details.`);
       }
 
       if (!data || !data.response) {
