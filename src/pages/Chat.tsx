@@ -118,11 +118,27 @@ export default function Chat() {
 
       if (error) {
         console.error("Edge function error:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
+        console.error("Full error object:", JSON.stringify(error, null, 2));
         
         // Check for specific error context
         const errorContext = (error as any)?.context;
         const statusCode = errorContext?.status || (error as any)?.status;
+        const errorBody = errorContext?.body || (error as any)?.body;
+        
+        // Try to parse error message from various possible locations
+        let actualError = error.message || "Unknown error";
+        if (typeof errorBody === "string") {
+          try {
+            const parsed = JSON.parse(errorBody);
+            actualError = parsed.error || actualError;
+          } catch {
+            actualError = errorBody;
+          }
+        } else if (errorBody?.error) {
+          actualError = errorBody.error;
+        } else if (errorBody) {
+          actualError = typeof errorBody === "string" ? errorBody : JSON.stringify(errorBody);
+        }
         
         // Provide more specific error messages
         if (error.message?.includes("Function not found") || error.message?.includes("404") || statusCode === 404) {
@@ -135,21 +151,18 @@ export default function Chat() {
         
         // If we have a status code, check what it means
         if (statusCode === 500) {
-          const errorBody = errorContext?.body || (error as any)?.body;
-          if (errorBody?.error?.includes("AI_API_KEY") || errorBody?.error?.includes("AI service not configured")) {
-            throw new Error("AI service not configured. Please set AI_API_KEY secret in Supabase Dashboard → Edge Functions → Secrets. Get your Gemini API key from https://makersuite.google.com/app/apikey");
+          if (actualError?.includes("AI_API_KEY") || actualError?.includes("AI service not configured")) {
+            throw new Error("❌ AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key. Get it from https://makersuite.google.com/app/apikey");
           }
-          throw new Error(`Server error (500): ${errorBody?.error || error.message || "Check Supabase Edge Functions logs for details."}`);
+          throw new Error(`❌ Server error (500): ${actualError || error.message || "Unknown error. Check Supabase Dashboard → Edge Functions → coffee-chat → Logs tab for details."}`);
         }
         
         if (statusCode === 400) {
-          const errorBody = errorContext?.body || (error as any)?.body;
-          throw new Error(`Invalid request (400): ${errorBody?.error || error.message || "Check your request format."}`);
+          throw new Error(`❌ Bad request (400): ${actualError || error.message || "Check your request format."}`);
         }
         
         // Generic non-2xx error
-        const errorMessage = errorContext?.body?.error || error.message || "Edge function returned an error";
-        throw new Error(`${errorMessage} (Status: ${statusCode || "unknown"}). Check Supabase Dashboard → Edge Functions → coffee-chat → Logs for details.`);
+        throw new Error(`❌ Error (Status ${statusCode || "unknown"}): ${actualError || error.message || "Check Supabase Dashboard → Edge Functions → coffee-chat → Logs for details."}`);
       }
 
       if (!data || !data.response) {
