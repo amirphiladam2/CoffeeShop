@@ -19,11 +19,14 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationHistory } = await req.json();
-
-    if (!message) {
+    // Parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
       return new Response(JSON.stringify({
-        error: "Message is required"
+        error: "Invalid request body. Expected JSON."
       }), {
         status: 400,
         headers: {
@@ -32,6 +35,23 @@ serve(async (req) => {
         }
       });
     }
+
+    const { message, conversationHistory } = requestBody;
+
+    if (!message || typeof message !== "string" || message.trim().length === 0) {
+      return new Response(JSON.stringify({
+        error: "Message is required and must be a non-empty string"
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
+    }
+
+    // Ensure conversationHistory is an array
+    const history = Array.isArray(conversationHistory) ? conversationHistory : [];
 
     // Get Google Gemini API key (FREE tier available!)
     const AI_API_KEY = Deno.env.get("AI_API_KEY") || Deno.env.get("GEMINI_API_KEY");
@@ -76,38 +96,47 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
         role: "system",
         content: systemPrompt
       },
-      ...(conversationHistory || []).map((msg) => ({
-        role: msg.role,
-        content: msg.content
-      })),
+      ...history.map((msg: any) => {
+        // Validate message format
+        if (!msg || typeof msg !== "object") return null;
+        if (msg.role !== "user" && msg.role !== "assistant") return null;
+        if (!msg.content || typeof msg.content !== "string") return null;
+        return {
+          role: msg.role,
+          content: String(msg.content).trim()
+        };
+      }).filter((msg: any) => msg !== null),
       {
         role: "user",
-        content: message
+        content: String(message).trim()
       }
     ];
 
-    console.log("Calling Google Gemini API...");
-
     // Convert OpenAI format to Gemini format
+    // Filter out system messages and invalid messages
     const geminiMessages = messages
-      .filter((msg) => msg.role !== "system") // Gemini doesn't use system messages the same way
+      .filter((msg) => {
+        // Keep only user and assistant messages (system messages handled separately)
+        return msg.role === "user" || msg.role === "assistant";
+      })
       .map((msg) => ({
         role: msg.role === "assistant" ? "model" : "user",
         parts: [
           {
-            text: msg.content
+            text: String(msg.content || "").trim()
           }
         ]
-      }));
+      }))
+      .filter((msg) => msg.parts[0].text.length > 0); // Remove empty messages
 
     // Add system prompt as first user message for Gemini
     const systemMessage = messages.find((m) => m.role === "system");
-    if (systemMessage) {
+    if (systemMessage && systemMessage.content) {
       geminiMessages.unshift({
         role: "user",
         parts: [
           {
-            text: systemMessage.content
+            text: String(systemMessage.content).trim()
           }
         ]
       });
@@ -119,6 +148,19 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
             text: "Understood! I'm Venessa, ready to help you find your perfect coffee match."
           }
         ]
+      });
+    }
+
+    // Validate we have at least one user message
+    if (geminiMessages.length === 0 || !geminiMessages.some((msg) => msg.role === "user")) {
+      return new Response(JSON.stringify({
+        error: "No valid messages to send to AI"
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
       });
     }
 
