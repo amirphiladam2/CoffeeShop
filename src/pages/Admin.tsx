@@ -187,16 +187,18 @@ export default function Admin() {
   };
 
   const loadStats = async () => {
-    const [usersResult, chatsResult, coffeesResult] = await Promise.all([
+    const [usersResult, chatsResult, coffeesResult, ordersResult] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("chat_history").select("*", { count: "exact", head: true }),
       supabase.from("coffees").select("*", { count: "exact", head: true }),
+      supabase.from("orders").select("*", { count: "exact", head: true }),
     ]);
 
     setStats({
       totalUsers: usersResult.count || 0,
       totalChats: chatsResult.count || 0,
       totalCoffees: coffeesResult.count || 0,
+      totalOrders: ordersResult.count || 0,
     });
   };
 
@@ -367,7 +369,7 @@ export default function Admin() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: "pending" | "confirmed" | "processing" | "out_for_delivery" | "delivered" | "cancelled") => {
     try {
       const { error } = await supabase
         .from("orders")

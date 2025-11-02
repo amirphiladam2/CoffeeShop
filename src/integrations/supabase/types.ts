@@ -157,6 +157,78 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          id: string
+          user_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          payment_method: string
+          shipping_address: string
+          shipping_city: string
+          shipping_postal_code: string
+          shipping_phone: string
+          total_amount: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          payment_method?: string
+          shipping_address: string
+          shipping_city: string
+          shipping_postal_code: string
+          shipping_phone: string
+          total_amount: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          payment_method?: string
+          shipping_address?: string
+          shipping_city?: string
+          shipping_postal_code?: string
+          shipping_phone?: string
+          total_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          coffee_id: string
+          quantity: number
+          price: number
+          subtotal: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          coffee_id: string
+          quantity: number
+          price: number
+          subtotal: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          coffee_id?: string
+          quantity?: number
+          price?: number
+          subtotal?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -172,6 +244,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      order_status: "pending" | "confirmed" | "processing" | "out_for_delivery" | "delivered" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -300,6 +373,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
+      order_status: ["pending", "confirmed", "processing", "out_for_delivery", "delivered", "cancelled"],
     },
   },
 } as const
