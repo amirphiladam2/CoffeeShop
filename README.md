@@ -216,7 +216,6 @@ MIT License - feel free to use this project for learning or commercial purposes.
 
 - [shadcn/ui](https://ui.shadcn.com/) for the amazing component library
 - [Supabase](https://supabase.com/) for the backend infrastructure
-- [Google Gemini](https://ai.google.dev/) for optional AI capabilities
 
 ---
 
