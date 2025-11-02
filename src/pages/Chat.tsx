@@ -8,7 +8,6 @@ import { Send, Coffee, Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { FullPageLoading } from "@/components/LoadingSpinner";
-import { ChatDiagnostic } from "@/components/ChatDiagnostic";
 
 interface Message {
   id: string;
@@ -110,9 +109,6 @@ export default function Chat() {
         content: m.content
       }));
 
-      console.log("Calling edge function: coffee-chat");
-      console.log("Conversation history length:", conversationHistory.length);
-      
       const { data, error } = await supabase.functions.invoke("coffee-chat", {
         body: {
           message: userMessage,
@@ -121,9 +117,6 @@ export default function Chat() {
       });
 
       if (error) {
-        console.error("Edge function error:", error);
-        console.error("Full error object:", JSON.stringify(error, null, 2));
-        
         // Parse error details
         const errorContext = (error as any)?.context;
         const statusCode = errorContext?.status || (error as any)?.status;
@@ -297,7 +290,6 @@ export default function Chat() {
                   </Button>
                 </div>
               </div>
-              <ChatDiagnostic />
             </>
           )}
 
