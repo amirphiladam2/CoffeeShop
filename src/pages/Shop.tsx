@@ -269,7 +269,7 @@ export default function Shop() {
                     }`}
                   >
                     {coffee.inventory > 0
-                      ? `In Stock (${coffee.inventory})`
+                      ? "Available"
                       : "Out of Stock"}
                   </p>
                 </CardContent>

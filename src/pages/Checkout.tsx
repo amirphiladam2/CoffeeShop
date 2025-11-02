@@ -117,10 +117,14 @@ export default function Checkout() {
 
       toast({
         title: "Order Placed Successfully!",
-        description: "Your order has been confirmed. You will receive it soon.",
+        description: "Your order has been confirmed. View your orders to track status.",
+        duration: 5000,
       });
 
-      navigate("/orders");
+      // Navigate to orders page after a short delay to show toast
+      setTimeout(() => {
+        navigate("/orders");
+      }, 500);
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({
