@@ -8,6 +8,7 @@ import { Send, Coffee, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner, FullPageLoading } from "@/components/LoadingSpinner";
+import { ChatDiagnostic } from "@/components/ChatDiagnostic";
 
 interface Message {
   id: string;
@@ -102,51 +103,38 @@ export default function Chat() {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      // Call edge function for AI response
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      // Call edge function using Supabase client (handles CORS and auth automatically)
+      console.log("Calling edge function: coffee-chat");
       
-      if (!SUPABASE_URL || !SUPABASE_KEY) {
-        throw new Error("Supabase configuration missing. Please check environment variables.");
-      }
-      
-      const CHAT_URL = `${SUPABASE_URL}/functions/v1/coffee-chat`;
-      console.log("Calling edge function:", CHAT_URL);
-      
-      const response = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "apikey": SUPABASE_KEY,
-        },
-        body: JSON.stringify({ 
+      const { data, error } = await supabase.functions.invoke("coffee-chat", {
+        body: {
           message: userMessage,
           conversationHistory: messages.map(m => ({
             role: m.role,
             content: m.content
           }))
-        }),
-      }).catch((fetchError) => {
-        console.error("Network error:", fetchError);
-        throw new Error(`Network error: ${fetchError.message}. This usually means the edge function is not deployed or not accessible. Please check Supabase Edge Functions deployment.`);
+        }
       });
 
-      if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please try again later.");
+      if (error) {
+        console.error("Edge function error:", error);
+        
+        // Provide more specific error messages
+        if (error.message?.includes("Function not found") || error.message?.includes("404")) {
+          throw new Error("Edge function 'coffee-chat' is not deployed. Please deploy it in Supabase Dashboard → Edge Functions. See FIX_CORS_ERROR.md for instructions.");
+        }
+        
+        if (error.message?.includes("Network") || error.message?.includes("Failed to fetch")) {
+          throw new Error("Cannot connect to chat service. The edge function may not be deployed. Please check Supabase Dashboard → Edge Functions and ensure 'coffee-chat' exists.");
+        }
+        
+        throw new Error(error.message || "Failed to get response from AI");
       }
 
-      if (response.status === 402) {
-        throw new Error("AI credits exhausted. Please contact support.");
+      if (!data || !data.response) {
+        throw new Error(data?.error || "No response from AI. Please try again.");
       }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || `Failed to get response from AI (Status: ${response.status})`;
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
       const botResponse = data.response;
 
       // Add bot message
@@ -220,13 +208,16 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="container mx-auto max-w-4xl space-y-6">
           {messages.length === 0 && (
-            <div className="text-center py-12">
-              <Coffee className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Start Your Coffee Journey</h2>
-              <p className="text-muted-foreground">
-                Ask me anything about coffee! I can recommend drinks based on your taste.
-              </p>
-            </div>
+            <>
+              <div className="text-center py-12">
+                <Coffee className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h2 className="text-2xl font-semibold mb-2">Start Your Coffee Journey</h2>
+                <p className="text-muted-foreground">
+                  Ask me anything about coffee! I can recommend drinks based on your taste.
+                </p>
+              </div>
+              <ChatDiagnostic />
+            </>
           )}
 
           {messages.map((message) => (
