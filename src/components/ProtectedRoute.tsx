@@ -38,9 +38,9 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     if (location.pathname === "/admin") {
       toast({
         title: "Admin Access Required",
-        description: "You need admin privileges. See QUICK_ADMIN_ACCESS.md for instructions.",
+        description: "You need admin privileges. Run SETUP_ADMIN.sql in Supabase SQL Editor with your email.",
         variant: "destructive",
-        duration: 8000,
+        duration: 10000,
       });
     }
     return <Navigate to="/" replace />;

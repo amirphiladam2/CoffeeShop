@@ -78,6 +78,13 @@ export default function Admin() {
   const loadData = async () => {
     try {
       await Promise.all([loadCoffees(), loadCategories(), loadStats()]);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Error Loading Data",
+        description: error instanceof Error ? error.message : "Failed to load admin data. Please refresh the page.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -89,7 +96,10 @@ export default function Admin() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error loading coffees:", error);
+      throw error;
+    }
     setCoffees(data || []);
   };
 
@@ -99,8 +109,18 @@ export default function Admin() {
       .select("*")
       .order("name");
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error loading categories:", error);
+      throw error;
+    }
     setCategories(data || []);
+    if (!data || data.length === 0) {
+      toast({
+        title: "No Categories Found",
+        description: "Please create categories first before adding coffees.",
+        variant: "destructive",
+      });
+    }
   };
 
 
@@ -475,9 +495,25 @@ export default function Admin() {
                 coffees.map((coffee) => (
                   <div
                     key={coffee.id}
-                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/30 transition-colors"
+                    className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-secondary/30 transition-colors"
                   >
-                    <div className="flex-1">
+                    {coffee.image_url ? (
+                      <div className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border">
+                        <img
+                          src={coffee.image_url}
+                          alt={coffee.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 flex-shrink-0 rounded-md border flex items-center justify-center bg-muted">
+                        <Coffee className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{coffee.name}</h3>
                         {coffee.featured && (
@@ -502,6 +538,7 @@ export default function Admin() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(coffee)}
+                        title="Edit coffee"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -509,6 +546,7 @@ export default function Admin() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(coffee.id)}
+                        title="Delete coffee"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

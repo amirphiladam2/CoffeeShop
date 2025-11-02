@@ -7,7 +7,8 @@ An AI-powered coffee recommendation application built with React, TypeScript, Vi
 - 🤖 **AI-Powered Recommendations**: Chat with an AI barista to get personalized coffee suggestions
 - 🔐 **Authentication**: Secure user authentication with Supabase
 - 👤 **User Profiles**: View your profile and chat history
-- 🛡️ **Admin Dashboard**: Manage coffee items and view statistics (admin only)
+- 🛡️ **Admin Dashboard**: Manage coffee items, add images, and view statistics (admin only)
+- 🛒 **E-Commerce**: Shop for coffee products, manage cart, and place orders
 - 💬 **Chat History**: Save and view your conversation history
 - 🎨 **Modern UI**: Beautiful, responsive interface built with shadcn/ui and Tailwind CSS
 
@@ -19,81 +20,83 @@ An AI-powered coffee recommendation application built with React, TypeScript, Vi
 - **State Management**: React Context API, TanStack Query
 - **Routing**: React Router v6
 
-## How can I edit this code?
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- Node.js 18+ and npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd coffee-ai-brew
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Set up environment variables
-# Create a .env file in the root directory with your Supabase credentials:
+# Set up environment variables
+# Create a .env file in the root directory:
 # VITE_SUPABASE_URL=your_supabase_project_url
 # VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 
-
-# Step 5: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Admin Setup
 
-**Use GitHub Codespaces**
+To access the admin dashboard:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Run the SQL in `SETUP_ADMIN.sql` in Supabase SQL Editor (replace email with yours)
+2. Sign out and sign back in
+3. The "Admin" button will appear in navigation
 
+📖 See `ADMIN_QUICK_START.md` for detailed admin setup instructions
 
-## What technologies are used for this project?
+## Deployment
 
-This project is built with:
+Deploy to any platform that supports Node.js:
 
-- **Vite**: Fast build tool and dev server
-- **TypeScript**: Type-safe JavaScript
-- **React 18**: Modern React with hooks
-- **shadcn-ui**: High-quality component library
-- **Tailwind CSS**: Utility-first CSS framework
-- **Supabase**: Backend as a service (Auth, Database, Edge Functions)
-- **TanStack Query**: Powerful data synchronization for React
-- **React Router**: Declarative routing for React
-
-## Email Authentication Setup
-
-⚠️ **Important**: For email/password authentication to work (email verification, password reset), you need to configure SMTP in Supabase:
-
-1. Go to Supabase Dashboard → **Settings** → **Auth** → **SMTP Settings**
-2. **For Development**: Supabase's built-in SMTP works (limited to 3 emails/hour per user)
-3. **For Production**: Configure a custom SMTP provider (Gmail, SendGrid, Mailgun, AWS SES, Resend)
-
-📖 **See `SUPABASE_SMTP_SETUP.md` for detailed SMTP configuration instructions**
-
-## How can I deploy this project?
-
-You can deploy this project to any hosting platform that supports Node.js applications:
-
-- **Vercel**: Connect your GitHub repo and deploy
-- **Netlify**: Connect your GitHub repo and deploy
+- **Vercel**: Connect GitHub repo → Deploy
+- **Netlify**: Connect GitHub repo → Deploy
 - **Railway**: Deploy from GitHub
 - **Any Node.js hosting**: Build with `npm run build` and serve the `dist` folder
 
-**Before deploying**, make sure to:
-- ✅ Configure SMTP in Supabase (see `SUPABASE_SMTP_SETUP.md`)
+### Before Deploying
+
+- ✅ Configure SMTP in Supabase (Settings → Auth → SMTP Settings)
 - ✅ Set environment variables in your hosting platform
 - ✅ Update Supabase redirect URLs to your production domain
-- ✅ Run all database migrations
+- ✅ Run all database migrations from `supabase/migrations/`
+
+## Project Structure
+
+```
+coffee-ai-brew/
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── contexts/       # React context providers
+│   ├── hooks/          # Custom React hooks
+│   ├── integrations/   # Supabase client setup
+│   ├── lib/           # Utility functions
+│   └── pages/         # Page components
+├── supabase/
+│   ├── functions/     # Edge functions
+│   └── migrations/    # Database migrations
+└── public/            # Static assets
+```
+
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## License
+
+MIT
