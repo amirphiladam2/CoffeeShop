@@ -109,38 +109,14 @@ export default function Chat() {
         content: m.content
       }));
 
-      // 🔍 DEBUG: Log what we're sending
       const requestPayload = {
         message: userMessage,
         conversationHistory: conversationHistory
       };
-      
-      console.log("🔍 DEBUG: Request payload:");
-      console.log("- message type:", typeof userMessage);
-      console.log("- message value:", userMessage);
-      console.log("- message length:", userMessage.length);
-      console.log("- conversationHistory type:", typeof conversationHistory);
-      console.log("- conversationHistory is array:", Array.isArray(conversationHistory));
-      console.log("- conversationHistory length:", conversationHistory.length);
-      console.log("- Full payload:", JSON.stringify(requestPayload, null, 2));
-
-      // Check for common issues
-      if (typeof userMessage !== 'string') {
-        console.error("❌ ERROR: message is not a string!");
-      }
-      if (!Array.isArray(conversationHistory)) {
-        console.error("❌ ERROR: conversationHistory is not an array!");
-      }
-      
-      console.log("📤 Calling edge function: coffee-chat");
 
       const { data, error } = await supabase.functions.invoke("coffee-chat", {
         body: requestPayload
       });
-
-      console.log("📥 Response received");
-      console.log("- error:", error);
-      console.log("- data:", data);
 
       if (error) {
         // Parse error details
@@ -165,7 +141,7 @@ export default function Chat() {
         // Specific error handling with helpful messages
         if (error.message?.includes("Function not found") || error.message?.includes("404") || statusCode === 404) {
           if (actualError.includes("models/gemini-1.5-flash is not found")) {
-            throw new Error("❌ Gemini API Error: The model endpoint has changed. Please redeploy your edge function with the updated code (using v1 instead of v1beta).");
+            throw new Error("Gemini API Error: The model endpoint has changed. Please redeploy your edge function with the updated code (using v1 instead of v1beta).");
           }
           throw new Error("Edge function 'coffee-chat' is not deployed. Please deploy it in Supabase Dashboard → Edge Functions.");
         }
@@ -176,23 +152,23 @@ export default function Chat() {
         
         if (statusCode === 500) {
           if (actualError?.includes("AI_API_KEY") || actualError?.includes("AI service not configured")) {
-            throw new Error("❌ AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key. Get it from https://makersuite.google.com/app/apikey");
+            throw new Error("AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key. Get it from https://makersuite.google.com/app/apikey");
           }
           if (actualError?.includes("models/gemini-1.5-flash is not found")) {
-            throw new Error("❌ Gemini API Error: Model not found. Please update your edge function to use the v1 API endpoint instead of v1beta.");
+            throw new Error("Gemini API Error: Model not found. Please update your edge function to use the v1 API endpoint instead of v1beta.");
           }
-          throw new Error(`❌ Server error: ${actualError || "Check Supabase Dashboard → Edge Functions → coffee-chat → Logs for details."}`);
+          throw new Error(`Server error: ${actualError || "Check Supabase Dashboard → Edge Functions → coffee-chat → Logs for details."}`);
         }
         
         if (statusCode === 400) {
-          throw new Error(`❌ Bad request: ${actualError || "Invalid request format."}`);
+          throw new Error(`Bad request: ${actualError || "Invalid request format."}`);
         }
         
         if (statusCode === 429) {
-          throw new Error("❌ Rate limit exceeded. Please wait a moment and try again.");
+          throw new Error("Rate limit exceeded. Please wait a moment and try again.");
         }
         
-        throw new Error(`❌ Error (${statusCode || "unknown"}): ${actualError || "Check Supabase logs for details."}`);
+        throw new Error(`Error (${statusCode || "unknown"}): ${actualError || "Check Supabase logs for details."}`);
       }
 
       if (!data || !data.response) {
@@ -235,7 +211,7 @@ export default function Chat() {
         } else if (error.message.includes("Supabase configuration")) {
           errorMessage = "Missing Supabase configuration. Please check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set.";
         } else if (error.message.includes("models/gemini-1.5-flash is not found") || error.message.includes("v1beta")) {
-          errorMessage = "❌ API Version Error: Your edge function needs to be updated to use Gemini's v1 API instead of v1beta. Please redeploy with the fixed code.";
+          errorMessage = "API Version Error: Your edge function needs to be updated to use Gemini's v1 API instead of v1beta. Please redeploy with the fixed code.";
         }
       }
       

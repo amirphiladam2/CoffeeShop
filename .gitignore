@@ -19,9 +19,13 @@ yarn.lock
 pnpm-lock.yaml
 
 # Environment variables
+# These files contain sensitive keys and should never be committed
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.test
 
 # Editor directories and files
 .vscode/*

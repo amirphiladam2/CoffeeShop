@@ -1,15 +1,12 @@
 // Setup type definitions for built-in Supabase Runtime APIs
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Max-Age": "86400"
 };
-
-serve(async (req) => {
+serve(async (req)=>{
   // Handle CORS preflight requests - must return 200 OK
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -17,16 +14,15 @@ serve(async (req) => {
       headers: corsHeaders
     });
   }
-
   try {
-    // Parse request body
-    let requestBody;
+    // Parse request body with error handling
+    let body;
     try {
-      requestBody = await req.json();
+      body = await req.json();
     } catch (parseError) {
       console.error("Failed to parse request body:", parseError);
       return new Response(JSON.stringify({
-        error: "Invalid request body. Expected JSON."
+        error: "Invalid JSON in request body"
       }), {
         status: 400,
         headers: {
@@ -35,10 +31,10 @@ serve(async (req) => {
         }
       });
     }
-
-    const { message, conversationHistory } = requestBody;
-
-    if (!message || typeof message !== "string" || message.trim().length === 0) {
+    const { message, conversationHistory } = body;
+    // Validate message
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      console.error("Message validation failed:", message);
       return new Response(JSON.stringify({
         error: "Message is required and must be a non-empty string"
       }), {
@@ -49,10 +45,19 @@ serve(async (req) => {
         }
       });
     }
-
-    // Ensure conversationHistory is an array
-    const history = Array.isArray(conversationHistory) ? conversationHistory : [];
-
+    // Validate conversationHistory (optional but must be array if provided)
+    if (conversationHistory && !Array.isArray(conversationHistory)) {
+      console.error("conversationHistory validation failed:", conversationHistory);
+      return new Response(JSON.stringify({
+        error: "conversationHistory must be an array"
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
+    }
     // Get Google Gemini API key (FREE tier available!)
     const AI_API_KEY = Deno.env.get("AI_API_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!AI_API_KEY) {
@@ -67,7 +72,6 @@ serve(async (req) => {
         }
       });
     }
-
     // Build system prompt
     const systemPrompt = `You are Venessa, an expert AI barista and coffee consultant at BrewHaven. Your role is to help users discover their perfect coffee match based on their preferences, mood, and taste.
 
@@ -89,103 +93,68 @@ Coffee knowledge:
 - Macchiato: Espresso "marked" with foam - strong with a touch of sweetness
 
 Always be helpful and encouraging in guiding users to find their perfect coffee!`;
-
-    // Build messages array
-    const messages = [
-      {
-        role: "system",
-        content: systemPrompt
-      },
-      ...history.map((msg: any) => {
-        // Validate message format
-        if (!msg || typeof msg !== "object") return null;
-        if (msg.role !== "user" && msg.role !== "assistant") return null;
-        if (!msg.content || typeof msg.content !== "string") return null;
-        return {
-          role: msg.role,
-          content: String(msg.content).trim()
-        };
-      }).filter((msg: any) => msg !== null),
-      {
-        role: "user",
-        content: String(message).trim()
-      }
-    ];
-
-    // Convert OpenAI format to Gemini format
-    // Filter out system messages and invalid messages
-    const geminiMessages = messages
-      .filter((msg) => {
-        // Keep only user and assistant messages (system messages handled separately)
-        return msg.role === "user" || msg.role === "assistant";
-      })
-      .map((msg) => ({
-        role: msg.role === "assistant" ? "model" : "user",
-        parts: [
-          {
-            text: String(msg.content || "").trim()
-          }
-        ]
-      }))
-      .filter((msg) => msg.parts[0].text.length > 0); // Remove empty messages
-
-    // Add system prompt as first user message for Gemini
-    const systemMessage = messages.find((m) => m.role === "system");
-    if (systemMessage && systemMessage.content) {
-      geminiMessages.unshift({
-        role: "user",
-        parts: [
-          {
-            text: String(systemMessage.content).trim()
-          }
-        ]
-      });
-      // Add a dummy model response to acknowledge the system prompt
-      geminiMessages.splice(1, 0, {
-        role: "model",
-        parts: [
-          {
-            text: "Understood! I'm Venessa, ready to help you find your perfect coffee match."
-          }
-        ]
-      });
-    }
-
-    // Validate we have at least one user message
-    if (geminiMessages.length === 0 || !geminiMessages.some((msg) => msg.role === "user")) {
-      return new Response(JSON.stringify({
-        error: "No valid messages to send to AI"
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
+    // Convert to Gemini format
+    const geminiMessages = [];
+    // Add system prompt as first user message
+    geminiMessages.push({
+      role: "user",
+      parts: [
+        {
+          text: systemPrompt
         }
-      });
-    }
-
-    // FIXED: Changed from v1beta to v1
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${AI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: geminiMessages,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 500
-          }
-        })
+      ]
+    });
+    // Add acknowledgment
+    geminiMessages.push({
+      role: "model",
+      parts: [
+        {
+          text: "Understood! I'm Venessa, ready to help you find your perfect coffee match."
+        }
+      ]
+    });
+    // Add conversation history
+    if (conversationHistory && conversationHistory.length > 0) {
+      for (const msg of conversationHistory){
+        if (msg && msg.content) {
+          geminiMessages.push({
+            role: msg.role === "assistant" ? "model" : "user",
+            parts: [
+              {
+                text: msg.content
+              }
+            ]
+          });
+        }
       }
-    );
-
+    }
+    // Add current user message
+    geminiMessages.push({
+      role: "user",
+      parts: [
+        {
+          text: message
+        }
+      ]
+    });
+    // FIXED: Changed from v1beta to v1
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${AI_API_KEY}`;
+    const response = await fetch(geminiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: geminiMessages,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500
+        }
+      })
+    });
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
-      
       if (response.status === 429) {
         return new Response(JSON.stringify({
           error: "Rate limit exceeded. Please try again later."
@@ -197,11 +166,16 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
           }
         });
       }
-
       if (response.status === 400) {
-        const errorData = JSON.parse(errorText).error;
+        let errorMessage = "Invalid request to AI service.";
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error?.message || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
         return new Response(JSON.stringify({
-          error: errorData?.message || "Invalid request. Please check your API key."
+          error: errorMessage
         }), {
           status: 400,
           headers: {
@@ -210,7 +184,6 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
           }
         });
       }
-
       if (response.status === 404) {
         return new Response(JSON.stringify({
           error: "Model not found. Please verify your API key has access to Gemini 1.5 Flash."
@@ -222,7 +195,6 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
           }
         });
       }
-
       return new Response(JSON.stringify({
         error: "Failed to get AI response. Please check your API key and try again."
       }), {
@@ -233,12 +205,10 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
         }
       });
     }
-
     const data = await response.json();
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
     if (!aiResponse) {
-      console.error("No response from AI:", data);
+      console.error("No response text from AI:", JSON.stringify(data));
       return new Response(JSON.stringify({
         error: "No response from AI. Please try again."
       }), {
@@ -249,9 +219,6 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
         }
       });
     }
-
-    console.log("Successfully got AI response");
-
     return new Response(JSON.stringify({
       response: aiResponse
     }), {
@@ -261,9 +228,9 @@ Always be helpful and encouraging in guiding users to find their perfect coffee!
         "Content-Type": "application/json"
       }
     });
-
   } catch (error) {
     console.error("Error in coffee-chat function:", error);
+    console.error("Error stack:", error.stack);
     return new Response(JSON.stringify({
       error: error.message || "Internal server error"
     }), {

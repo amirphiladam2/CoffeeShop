@@ -178,7 +178,7 @@ export default function Profile() {
                       User ID: {user?.id}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Admin Role: Not Found ❌
+                      Admin Role: Not Found
                     </p>
                   </div>
                   <Button

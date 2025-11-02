@@ -22,7 +22,7 @@ export function ChatDiagnostic() {
       if (!SUPABASE_URL || !SUPABASE_KEY) {
         setResult({
           status: "error",
-          message: "❌ Missing Supabase configuration. Please check environment variables in Vercel.",
+          message: "Missing Supabase configuration. Please check environment variables in Vercel.",
         });
         setTesting(false);
         return;
@@ -45,17 +45,17 @@ export function ChatDiagnostic() {
         let errorMessage = error.message || "Unknown error";
         
         if (statusCode === 404 || error.message?.includes("Function not found")) {
-          errorMessage = "❌ Edge function 'coffee-chat' is NOT deployed. Go to Supabase Dashboard → Edge Functions → Create 'coffee-chat' function.";
+          errorMessage = "Edge function 'coffee-chat' is NOT deployed. Go to Supabase Dashboard → Edge Functions → Create 'coffee-chat' function.";
         } else if (statusCode === 500) {
           if (errorBody?.error?.includes("AI_API_KEY") || errorBody?.error?.includes("AI service not configured")) {
-            errorMessage = "❌ AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key.";
+            errorMessage = "AI_API_KEY secret is missing! Go to Supabase Dashboard → Edge Functions → Secrets → Add 'AI_API_KEY' with your Gemini API key.";
           } else {
-            errorMessage = `❌ Server error (500): ${errorBody?.error || error.message}. Check Supabase Edge Functions logs.`;
+            errorMessage = `Server error (500): ${errorBody?.error || error.message}. Check Supabase Edge Functions logs.`;
           }
         } else if (statusCode === 400) {
-          errorMessage = `❌ Bad request (400): ${errorBody?.error || error.message}`;
+          errorMessage = `Bad request (400): ${errorBody?.error || error.message}`;
         } else {
-          errorMessage = `❌ Error (Status ${statusCode || "unknown"}): ${errorBody?.error || error.message}`;
+          errorMessage = `Error (Status ${statusCode || "unknown"}): ${errorBody?.error || error.message}`;
         }
         
         setResult({
@@ -65,19 +65,19 @@ export function ChatDiagnostic() {
       } else if (data?.response) {
         setResult({
           status: "success",
-          message: `✅ Edge function is working! Response: "${data.response.substring(0, 50)}..."`,
+          message: `Edge function is working! Response: "${data.response.substring(0, 50)}..."`,
         });
       } else {
         setResult({
           status: "error",
-          message: `⚠️ No response from function. Data: ${JSON.stringify(data)}`,
+          message: `No response from function. Data: ${JSON.stringify(data)}`,
         });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setResult({
         status: "error",
-        message: `❌ Failed to connect: ${errorMessage}`,
+        message: `Failed to connect: ${errorMessage}`,
       });
     } finally {
       setTesting(false);

@@ -1,102 +1,234 @@
-# BrewHaven - AI Coffee Recommendations
+# BrewHaven
 
-An AI-powered coffee recommendation application built with React, TypeScript, Vite, and Supabase. Chat with Venessa at BrewHaven to discover your perfect coffee match based on your preferences and mood.
+A modern coffee e-commerce platform built with React and Supabase. Browse and order coffee products with a full-featured shopping experience, user authentication, and admin management capabilities.
+
+![Tech Stack](https://img.shields.io/badge/React-18.3-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue) ![Supabase](https://img.shields.io/badge/Supabase-Latest-green) ![Vite](https://img.shields.io/badge/Vite-5.4-purple)
 
 ## Features
 
-- 🤖 **AI-Powered Recommendations**: Chat with an AI barista to get personalized coffee suggestions
-- 🔐 **Authentication**: Secure user authentication with Supabase
-- 👤 **User Profiles**: View your profile and chat history
-- 🛡️ **Admin Dashboard**: Manage coffee items, add images, and view statistics (admin only)
-- 🛒 **E-Commerce**: Shop for coffee products, manage cart, and place orders
-- 💬 **Chat History**: Save and view your conversation history
-- 🎨 **Modern UI**: Beautiful, responsive interface built with shadcn/ui and Tailwind CSS
+### E-Commerce Platform
+- **Browse Coffee Catalog**: Explore a wide variety of coffee products with detailed descriptions
+- **Smart Filtering**: Filter by category, type (Hot/Cold), price range, and search by name
+- **Shopping Cart**: Add items, update quantities, and manage your cart
+- **Order Management**: Complete checkout flow with shipping details and order tracking
+- **Order History**: View all your past orders with full details
+
+### User Features
+- **Authentication**: Secure sign-up and login with Supabase Auth
+- **User Profiles**: Manage your profile information
+- **Protected Routes**: Secure access to user-specific pages
+- **Session Management**: Persistent authentication state
+
+### Admin Dashboard
+- **Coffee Management**: Add, edit, and delete coffee products
+- **Inventory Control**: Manage stock levels and product availability
+- **Statistics Overview**: View user counts, order statistics, and chat metrics
+- **Image Upload**: Add product images with URL support
+- **Category Management**: Organize products by categories
+
+### Modern UI/UX
+- **Beautiful Design**: Built with shadcn/ui and Tailwind CSS
+- **Responsive Layout**: Works seamlessly on desktop, tablet, and mobile
+- **Dark Mode Ready**: Theme support with next-themes
+- **Loading States**: Smooth loading indicators and error boundaries
+- **Toast Notifications**: User-friendly feedback for all actions
+
+### Optional AI Chat Feature
+- **AI Chat Bot**: Optional chat interface for coffee recommendations (requires Google Gemini API key)
+- **Conversation History**: Chat history persistence (when AI feature is enabled)
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
-- **UI Components**: shadcn/ui, Radix UI, Tailwind CSS
-- **Backend**: Supabase (Authentication, Database, Edge Functions)
-- **State Management**: React Context API, TanStack Query
-- **Routing**: React Router v6
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **React Router v6** - Client-side routing
+- **TanStack Query** - Server state management
+- **shadcn/ui** - Component library
+- **Tailwind CSS** - Styling
+- **Radix UI** - Accessible primitives
 
-## Getting Started
+### Backend
+- **Supabase** - Backend-as-a-Service
+  - Authentication (Email/Password)
+  - PostgreSQL Database
+  - Row Level Security (RLS)
+  - Edge Functions (Deno)
+  - Storage (for future image uploads)
 
-### Prerequisites
+### Optional AI Integration
+- **Google Gemini 1.5 Flash** - AI chat recommendations (optional)
+- **RESTful Edge Function** - Secure API endpoint
 
-- Node.js 18+ and npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Prerequisites
 
-### Installation
+Before you begin, ensure you have:
 
-```sh
-# Clone the repository
-git clone <YOUR_GIT_URL>
+- **Node.js 18+** and npm installed
+- A **Supabase account** (free tier available)
+- (Optional) A **Google Gemini API key** if you want to enable the AI chat feature
+  - Get one at: https://makersuite.google.com/app/apikey
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repo-url>
 cd coffee-ai-brew
+```
 
-# Install dependencies
+### 2. Install Dependencies
+
+```bash
 npm install
+```
 
-# Set up environment variables
-# Create a .env file in the root directory:
-# VITE_SUPABASE_URL=your_supabase_project_url
-# VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+### 3. Set Up Environment Variables
 
-# Start the development server
+Create a `.env` file in the root directory:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+```
+
+**Important**: The `.env` file is already in `.gitignore` and will not be committed to version control.
+
+### 4. Set Up Supabase Backend
+
+**See `BACKEND_SETUP.md` for complete step-by-step backend setup guide**
+
+Quick summary:
+1. Create a new Supabase project
+2. Run `FRESH_SETUP.sql` in Supabase SQL Editor to create all tables and policies
+3. (Optional) Deploy the `coffee-chat` Edge Function if you want AI chat features
+4. (Optional) Set the `AI_API_KEY` secret in Supabase Edge Functions if using AI chat
+5. Add admin role for your user (see BACKEND_SETUP.md)
+
+### 5. Start Development Server
+
+```bash
 npm run dev
 ```
 
 The app will be available at `http://localhost:8080`
-
-### Backend Setup
-
-📖 **See `BACKEND_SETUP.md` for complete step-by-step backend setup guide**
-
-Quick steps:
-1. Create Supabase project
-2. Run `FRESH_SETUP.sql` in Supabase SQL Editor
-3. Deploy edge function for chatbot
-4. Set environment variables
-5. Add admin role for your user
-
-## Deployment
-
-Deploy to any platform that supports Node.js:
-
-- **Vercel**: Connect GitHub repo → Deploy
-- **Netlify**: Connect GitHub repo → Deploy
-- **Railway**: Deploy from GitHub
-- **Any Node.js hosting**: Build with `npm run build` and serve the `dist` folder
-
-### Before Deploying
-
-- ✅ Complete backend setup (see `BACKEND_SETUP.md`)
-- ✅ Set environment variables in Vercel/hosting platform
-- ✅ Update Supabase redirect URLs to your production domain
 
 ## Project Structure
 
 ```
 coffee-ai-brew/
 ├── src/
-│   ├── components/     # Reusable UI components
-│   ├── contexts/       # React context providers
-│   ├── hooks/          # Custom React hooks
-│   ├── integrations/   # Supabase client setup
-│   ├── lib/           # Utility functions
-│   └── pages/         # Page components
+│   ├── components/          # Reusable UI components
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── ChatDiagnostic.tsx
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── LoadingSpinner.tsx
+│   ├── contexts/           # React Context providers
+│   │   ├── AuthContext.tsx # Authentication state
+│   │   └── CartContext.tsx # Shopping cart state
+│   ├── hooks/             # Custom React hooks
+│   ├── integrations/      # External service integrations
+│   │   └── supabase/      # Supabase client and types
+│   ├── lib/               # Utility functions
+│   │   ├── env.ts         # Environment validation
+│   │   └── utils.ts       # General utilities
+│   └── pages/             # Page components
+│       ├── Landing.tsx    # Homepage
+│       ├── Auth.tsx       # Login/Signup
+│       ├── Chat.tsx       # AI chat interface (optional)
+│       ├── Shop.tsx       # Product catalog
+│       ├── Cart.tsx       # Shopping cart
+│       ├── Checkout.tsx   # Checkout process
+│       ├── Orders.tsx     # Order history
+│       ├── Profile.tsx    # User profile
+│       └── Admin.tsx      # Admin dashboard
 ├── supabase/
-│   ├── functions/     # Edge functions
-│   └── migrations/    # Database migrations
-└── public/            # Static assets
+│   ├── functions/         # Edge functions
+│   │   └── coffee-chat/   # AI chat endpoint (optional)
+│   └── migrations/        # Database migrations
+├── public/                # Static assets
+└── BACKEND_SETUP.md       # Detailed backend setup guide
 ```
 
-## Scripts
+## Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server on port 8080
 - `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint
+
+## Deployment
+
+The app can be deployed to any platform that supports Node.js and static hosting:
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Add environment variables in Vercel dashboard:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+4. Deploy
+
+### Other Platforms
+
+- **Netlify**: Connect GitHub repo → Set build command: `npm run build` → Publish directory: `dist`
+- **Railway**: Deploy from GitHub
+- **Any Node.js hosting**: Build with `npm run build` and serve the `dist` folder
+
+### Before Deploying
+
+- Complete backend setup (see `BACKEND_SETUP.md`)
+- Set environment variables in your hosting platform
+- Update Supabase redirect URLs to your production domain
+- (Optional) If using AI chat: Ensure Edge Function is deployed and `AI_API_KEY` secret is set
+
+## Security
+
+- **Row Level Security (RLS)**: All database tables have RLS policies enabled
+- **Environment Variables**: Sensitive keys are never committed to version control
+- **Protected Routes**: User and admin routes are protected with authentication
+- **API Security**: Edge Functions use Supabase's built-in authentication
+
+## Documentation
+
+- **`BACKEND_SETUP.md`** - Complete step-by-step backend setup guide
+- **`FRONTEND_TABLES_REFERENCE.md`** - Database schema reference for frontend developers
+
+## Troubleshooting
+
+### Admin panel not accessible?
+- Run the admin role SQL query (see `BACKEND_SETUP.md` Step 8)
+- Sign out and sign back in to refresh your session
+- Check browser console for errors
+
+### Database errors?
+- Re-run `FRESH_SETUP.sql` in Supabase SQL Editor
+- Verify all tables and policies were created successfully
+
+### Chat not working?
+- This is an optional feature. If you want to enable it:
+- Verify Edge Function `coffee-chat` is deployed in Supabase
+- Check `AI_API_KEY` secret is set in Supabase Edge Functions
+- Verify environment variables match your Supabase project
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+MIT License - feel free to use this project for learning or commercial purposes.
+
+## Acknowledgments
+
+- [shadcn/ui](https://ui.shadcn.com/) for the amazing component library
+- [Supabase](https://supabase.com/) for the backend infrastructure
+- [Google Gemini](https://ai.google.dev/) for optional AI capabilities
+
+---
+
+Made with coffee and dedication

@@ -28,13 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .rpc("has_role", { _user_id: userId, _role: "admin" });
       
       if (!functionError && roleCheck === true) {
-        console.log("✅ Admin role confirmed via has_role function for user:", userId);
         setIsAdmin(true);
         return;
-      }
-
-      if (functionError) {
-        console.warn("has_role function error (trying direct query):", functionError);
       }
 
       // Method 2: Fallback - Check via user_roles table directly
@@ -46,26 +41,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error("❌ Error checking admin role from user_roles:", error);
-        console.error("Error details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
         setIsAdmin(false);
         return;
       }
 
       if (data) {
-        console.log("✅ Admin role found in user_roles table:", data);
         setIsAdmin(true);
       } else {
-        console.log("ℹ️ No admin role found for user:", userId);
         setIsAdmin(false);
       }
     } catch (error) {
-      console.error("❌ Exception checking admin role:", error);
       setIsAdmin(false);
     }
   }, []);
