@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Coffee, Plus, Trash2, Edit, ArrowLeft, Users, MessageSquare, IceCream } from "lucide-react";
+import { Coffee, Plus, Trash2, Edit, ArrowLeft, Users, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { FullPageLoading } from "@/components/LoadingSpinner";
@@ -33,7 +33,6 @@ interface Coffee {
   description: string;
   type: string;
   category_id: string;
-  ice_flavour_id?: string;
   price?: number;
   inventory?: number;
   featured?: boolean;
@@ -43,13 +42,6 @@ interface Coffee {
 interface Category {
   id: string;
   name: string;
-}
-
-interface IceFlavour {
-  id: string;
-  name: string;
-  description?: string;
-  color?: string;
 }
 
 interface Stats {
@@ -63,25 +55,16 @@ export default function Admin() {
   const { toast } = useToast();
   const [coffees, setCoffees] = useState<Coffee[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [iceFlavours, setIceFlavours] = useState<IceFlavour[]>([]);
   const [stats, setStats] = useState<Stats>({ totalUsers: 0, totalChats: 0, totalCoffees: 0 });
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCoffee, setEditingCoffee] = useState<Coffee | null>(null);
-  const [iceFlavourDialogOpen, setIceFlavourDialogOpen] = useState(false);
-  const [editingIceFlavour, setEditingIceFlavour] = useState<IceFlavour | null>(null);
-  const [iceFlavourFormData, setIceFlavourFormData] = useState({
-    name: "",
-    description: "",
-    color: "#CCCCCC",
-  });
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     type: "Hot",
     category_id: "",
-    ice_flavour_id: "",
     price: 100,
     inventory: 0,
     featured: false,
@@ -94,7 +77,7 @@ export default function Admin() {
 
   const loadData = async () => {
     try {
-      await Promise.all([loadCoffees(), loadCategories(), loadIceFlavours(), loadStats()]);
+      await Promise.all([loadCoffees(), loadCategories(), loadStats()]);
     } finally {
       setLoading(false);
     }
@@ -120,15 +103,6 @@ export default function Admin() {
     setCategories(data || []);
   };
 
-  const loadIceFlavours = async () => {
-    const { data, error } = await supabase
-      .from("ice_flavours")
-      .select("*")
-      .order("name");
-
-    if (error) throw error;
-    setIceFlavours(data || []);
-  };
 
   const loadStats = async () => {
     const [usersResult, chatsResult, coffeesResult] = await Promise.all([
@@ -168,7 +142,6 @@ export default function Admin() {
     try {
       const updateData = {
         ...formData,
-        ice_flavour_id: formData.ice_flavour_id || null,
         image_url: formData.image_url?.trim() || null,
       };
 
@@ -247,7 +220,6 @@ export default function Admin() {
       description: coffee.description || "",
       type: coffee.type,
       category_id: coffee.category_id || "",
-      ice_flavour_id: coffee.ice_flavour_id || "",
       price: coffee.price || 100,
       inventory: coffee.inventory || 0,
       featured: coffee.featured || false,
@@ -263,7 +235,6 @@ export default function Admin() {
       description: "",
       type: "Hot",
       category_id: "",
-      ice_flavour_id: "",
       price: 100,
       inventory: 0,
       featured: false,
@@ -271,111 +242,6 @@ export default function Admin() {
     });
   };
 
-  const handleIceFlavourSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!iceFlavourFormData.name) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (editingIceFlavour) {
-        const { error } = await supabase
-          .from("ice_flavours")
-          .update({
-            name: iceFlavourFormData.name,
-            description: iceFlavourFormData.description || null,
-            color: iceFlavourFormData.color || null,
-          })
-          .eq("id", editingIceFlavour.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Ice flavour updated successfully",
-        });
-      } else {
-        const { error } = await supabase.from("ice_flavours").insert({
-          name: iceFlavourFormData.name,
-          description: iceFlavourFormData.description || null,
-          color: iceFlavourFormData.color || null,
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Ice flavour added successfully",
-        });
-      }
-
-      setIceFlavourDialogOpen(false);
-      resetIceFlavourForm();
-      loadIceFlavours();
-    } catch (error) {
-      console.error("Error saving ice flavour:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to save ice flavour";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteIceFlavour = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this ice flavour?")) return;
-
-    try {
-      const { error } = await supabase.from("ice_flavours").delete().eq("id", id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Ice flavour deleted successfully",
-      });
-
-      loadIceFlavours();
-    } catch (error) {
-      console.error("Error deleting ice flavour:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to delete ice flavour";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEditIceFlavour = (iceFlavour: IceFlavour) => {
-    setEditingIceFlavour(iceFlavour);
-    setIceFlavourFormData({
-      name: iceFlavour.name,
-      description: iceFlavour.description || "",
-      color: iceFlavour.color || "#CCCCCC",
-    });
-    setIceFlavourDialogOpen(true);
-  };
-
-  const resetIceFlavourForm = () => {
-    setEditingIceFlavour(null);
-    setIceFlavourFormData({
-      name: "",
-      description: "",
-      color: "#CCCCCC",
-    });
-  };
 
   if (loading) {
     return <FullPageLoading />;
@@ -427,144 +293,6 @@ export default function Admin() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Ice Flavour Management */}
-        <Card className="border-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Ice Flavour Management</CardTitle>
-                <CardDescription>Add, edit, or remove ice flavours</CardDescription>
-              </div>
-              <Dialog open={iceFlavourDialogOpen} onOpenChange={(open) => {
-                setIceFlavourDialogOpen(open);
-                if (!open) resetIceFlavourForm();
-              }}>
-                <DialogTrigger asChild>
-                  <Button variant="hero">
-                    <IceCream className="h-4 w-4 mr-2" />
-                    Add Ice Flavour
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{editingIceFlavour ? "Edit Ice Flavour" : "Add New Ice Flavour"}</DialogTitle>
-                    <DialogDescription>
-                      Fill in the details for the ice flavour
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleIceFlavourSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="iceFlavourName">Name</Label>
-                      <Input
-                        id="iceFlavourName"
-                        value={iceFlavourFormData.name}
-                        onChange={(e) => setIceFlavourFormData({ ...iceFlavourFormData, name: e.target.value })}
-                        placeholder="e.g., Vanilla"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="iceFlavourDescription">Description</Label>
-                      <Textarea
-                        id="iceFlavourDescription"
-                        value={iceFlavourFormData.description}
-                        onChange={(e) => setIceFlavourFormData({ ...iceFlavourFormData, description: e.target.value })}
-                        placeholder="Describe the ice flavour..."
-                        rows={3}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="iceFlavourColor">Color (Hex)</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="iceFlavourColor"
-                          type="color"
-                          value={iceFlavourFormData.color}
-                          onChange={(e) => setIceFlavourFormData({ ...iceFlavourFormData, color: e.target.value })}
-                          className="w-20 h-10"
-                        />
-                        <Input
-                          type="text"
-                          value={iceFlavourFormData.color}
-                          onChange={(e) => setIceFlavourFormData({ ...iceFlavourFormData, color: e.target.value })}
-                          placeholder="#CCCCCC"
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 pt-4">
-                      <Button type="submit" className="flex-1" variant="hero">
-                        {editingIceFlavour ? "Update" : "Add"} Ice Flavour
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setIceFlavourDialogOpen(false);
-                          resetIceFlavourForm();
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {iceFlavours.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No ice flavours yet. Add your first one!
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {iceFlavours.map((iceFlavour) => (
-                    <div
-                      key={iceFlavour.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div
-                          className="w-8 h-8 rounded-full border-2 border-border"
-                          style={{ backgroundColor: iceFlavour.color || "#CCCCCC" }}
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{iceFlavour.name}</h3>
-                          {iceFlavour.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">
-                              {iceFlavour.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditIceFlavour(iceFlavour)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteIceFlavour(iceFlavour.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Coffee Management */}
         <Card className="border-2">
@@ -642,32 +370,6 @@ export default function Admin() {
                           {categories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>
                               {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="iceFlavour">Ice Flavour (Optional)</Label>
-                      <Select
-                        value={formData.ice_flavour_id || "__none__"}
-                        onValueChange={(value) => setFormData({ ...formData, ice_flavour_id: value === "__none__" ? "" : value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select ice flavour (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {iceFlavours.map((flavour) => (
-                            <SelectItem key={flavour.id} value={flavour.id}>
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-3 h-3 rounded-full border border-border"
-                                  style={{ backgroundColor: flavour.color || "#CCCCCC" }}
-                                />
-                                {flavour.name}
-                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
