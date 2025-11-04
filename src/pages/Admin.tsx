@@ -77,6 +77,7 @@ interface Order {
   updated_at: string;
   order_items: OrderItem[];
   user_email?: string;
+  user_full_name?: string | null;
 }
 
 export default function Admin() {
@@ -342,21 +343,25 @@ export default function Admin() {
 
       if (ordersError) throw ordersError;
 
-      // Get user emails
+      // Get user profiles with full details
       const userIds = [...new Set((ordersData || []).map((o: any) => o.user_id))];
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, email")
+        .select("id, email, full_name")
         .in("id", userIds);
 
-      // Create email map
-      const emailMap = new Map((profilesData || []).map((p: any) => [p.id, p.email]));
+      // Create profile map
+      const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
 
-      // Format orders with user email
-      const formattedOrders = (ordersData || []).map((order: any) => ({
-        ...order,
-        user_email: emailMap.get(order.user_id) || "Unknown"
-      }));
+      // Format orders with user details
+      const formattedOrders = (ordersData || []).map((order: any) => {
+        const profile = profileMap.get(order.user_id);
+        return {
+          ...order,
+          user_email: profile?.email || "Unknown",
+          user_full_name: profile?.full_name || null
+        };
+      });
 
       setOrders(formattedOrders);
     } catch (error) {
@@ -801,9 +806,6 @@ export default function Admin() {
                               </Badge>
                             </CardTitle>
                             <p className="text-sm text-muted-foreground mt-1">
-                              Customer: {order.user_email || "Unknown"}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
                               Placed on: {new Date(order.created_at).toLocaleString()}
                             </p>
                           </div>
@@ -814,9 +816,48 @@ export default function Admin() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* Customer Details */}
+                        <div className="border-b pb-4">
+                          <h4 className="font-semibold mb-3">Customer Details:</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <p className="text-muted-foreground mb-1">Name:</p>
+                              <p className="font-medium">{order.user_full_name || "Not provided"}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1">Email:</p>
+                              <p className="font-medium">{order.user_email || "Unknown"}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1">Phone:</p>
+                              <p className="font-medium">{order.shipping_phone}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1">User ID:</p>
+                              <p className="font-mono text-xs">{order.user_id.slice(0, 8)}...</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Delivery Address */}
+                        <div className="border-b pb-4">
+                          <h4 className="font-semibold mb-2">Delivery Address:</h4>
+                          <div className="text-sm space-y-1">
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">Address:</span> {order.shipping_address}
+                            </p>
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">City:</span> {order.shipping_city}
+                            </p>
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">Postal Code:</span> {order.shipping_postal_code}
+                            </p>
+                          </div>
+                        </div>
+
                         {/* Order Items */}
                         <div>
-                          <h4 className="font-semibold mb-2">Items:</h4>
+                          <h4 className="font-semibold mb-2">Order Items:</h4>
                           <div className="space-y-2">
                             {order.order_items?.map((item) => (
                               <div
@@ -844,17 +885,6 @@ export default function Admin() {
                               </div>
                             ))}
                           </div>
-                        </div>
-
-                        {/* Delivery Address */}
-                        <div className="border-t pt-4">
-                          <h4 className="font-semibold mb-2">Delivery Address:</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {order.shipping_address}, {order.shipping_city} {order.shipping_postal_code}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Phone: {order.shipping_phone}
-                          </p>
                         </div>
 
                         {/* Status Update */}

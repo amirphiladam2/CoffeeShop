@@ -32,7 +32,7 @@ export default function Shop() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
-  const { addToCart } = useCart();
+  const { addToCart, totalItems } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -152,6 +152,11 @@ export default function Shop() {
               <ShoppingCart className="h-5 w-5 md:mr-2" />
               <span className="hidden md:inline">View Cart</span>
               <span className="sr-only">View Cart</span>
+              {totalItems > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {totalItems}
+                </Badge>
+              )}
             </Button>
           </div>
 

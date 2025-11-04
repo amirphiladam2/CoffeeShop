@@ -303,7 +303,7 @@ export default function Checkout() {
                   </Button>
                   <div className="text-xs text-muted-foreground text-center">
                     <p className="mb-1">Payment will be collected on delivery</p>
-                    <p>Estimated delivery: 2-3 business days</p>
+                    <p>Estimated delivery: 30 min - 2 hours</p>
                   </div>
                 </CardContent>
               </Card>
