@@ -16,7 +16,7 @@ interface Profile {
 }
 
 export default function Profile() {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -144,61 +144,6 @@ export default function Profile() {
                   <p className="text-2xl font-bold text-foreground">{chatCount}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Admin Panel Access */}
-          <Card className="border-2 border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Coffee className="h-5 w-5 text-primary" />
-                Admin Access
-              </CardTitle>
-              <CardDescription>
-                {isAdmin 
-                  ? "You have admin privileges to manage the coffee shop"
-                  : "You don't have admin privileges yet. Run the SQL setup to get admin access."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {isAdmin ? (
-                <Button
-                  variant="default"
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => navigate("/admin")}
-                >
-                  <Coffee className="h-4 w-4 mr-2" />
-                  Open Admin Panel
-                </Button>
-              ) : (
-                <>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm font-medium mb-2">Current Status:</p>
-                    <p className="text-xs text-muted-foreground">
-                      User ID: {user?.id}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Admin Role: Not Found
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      alert(`To get admin access:\n\n1. Go to Supabase SQL Editor\n2. Run this SQL:\n\nINSERT INTO public.user_roles (user_id, role)\nVALUES ('${user?.id}', 'admin'::public.app_role)\nON CONFLICT (user_id, role) DO NOTHING;\n\n3. Refresh this page`);
-                    }}
-                  >
-                    Show Setup Instructions
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    onClick={() => window.location.reload()}
-                  >
-                    Refresh Admin Status
-                  </Button>
-                </>
-              )}
             </CardContent>
           </Card>
 

@@ -134,14 +134,26 @@ export default function Admin() {
         setCoffees(coffeesResult.data || []);
         setCategories(categoriesResult.data || []);
 
-        if (usersResult.count !== null && chatsResult.count !== null && coffeesCountResult.count !== null && ordersCountResult.count !== null) {
-          setStats({
-            totalUsers: usersResult.count,
-            totalChats: chatsResult.count,
-            totalCoffees: coffeesCountResult.count,
-            totalOrders: ordersCountResult.count,
-          });
+        // Handle stats with error handling for each count
+        const stats = {
+          totalUsers: usersResult.error ? 0 : (usersResult.count || 0),
+          totalChats: chatsResult.error ? 0 : (chatsResult.count || 0),
+          totalCoffees: coffeesCountResult.error ? 0 : (coffeesCountResult.count || 0),
+          totalOrders: ordersCountResult.error ? 0 : (ordersCountResult.count || 0),
+        };
+
+        // Log warnings for non-critical errors
+        if (usersResult.error) {
+          console.warn("Failed to load profile count (non-critical):", usersResult.error);
         }
+        if (chatsResult.error) {
+          console.warn("Failed to load chat count (non-critical):", chatsResult.error);
+        }
+        if (ordersCountResult.error) {
+          console.warn("Failed to load orders count (non-critical):", ordersCountResult.error);
+        }
+
+        setStats(stats);
 
         if (!categoriesResult.data || categoriesResult.data.length === 0) {
           toast({
