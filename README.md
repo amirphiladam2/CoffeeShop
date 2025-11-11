@@ -1,8 +1,8 @@
-# ☕ CoffeeShop - Modern E-Commerce Platform
+# ☕ BrewHaven - Modern E-Commerce Platform
 
 <div align="center">
 
-![CoffeeShop](https://img.shields.io/badge/CoffeeShop-E--Commerce-orange?style=for-the-badge)
+![BrewHaven](https://img.shields.io/badge/BrewHaven-E--Commerce-orange?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Latest-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
@@ -18,7 +18,7 @@
 
 ## 📖 About
 
-CoffeeShop is a production-ready e-commerce platform designed for coffee retailers. It provides a seamless shopping experience with advanced features including user authentication, shopping cart management, order processing, and a comprehensive admin dashboard. Built with React, TypeScript, and Supabase for scalability and performance.
+BrewHaven is a production-ready e-commerce platform designed for coffee retailers. It provides a seamless shopping experience with advanced features including user authentication, shopping cart management, order processing, and a comprehensive admin dashboard. Built with React, TypeScript, and Supabase for scalability and performance.
 
 ### ✨ Key Highlights
 
@@ -118,8 +118,8 @@ Before you begin, ensure you have the following installed:
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/amirphiladam2/CoffeeShop.git
-cd CoffeeShop
+git clone https://github.com/amirphiladam2/BrewHaven.git
+cd BrewHaven
 ```
 
 ### 2️⃣ Install Dependencies
@@ -160,7 +160,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-CoffeeShop/
+BrewHaven/
 ├── src/
 │   ├── components/          # Reusable UI components
 │   │   ├── ui/              # shadcn/ui components
@@ -305,6 +305,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ☕ coffee and ❤️ dedication**
 
-[⬆ Back to Top](#-coffeeshop---modern-e-commerce-platform)
+[⬆ Back to Top](#-brewhaven---modern-e-commerce-platform)
 
 </div>
